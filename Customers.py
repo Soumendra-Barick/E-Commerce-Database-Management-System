@@ -1,4 +1,4 @@
-from Database import con
+from Database import connection
 
 class Customers:
     
@@ -9,7 +9,8 @@ class Customers:
     
     @staticmethod
     def create_table():
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """CREATE TABLE IF NOT EXISTS customers (
                 id SERIAL PRIMARY KEY,
@@ -17,28 +18,33 @@ class Customers:
                 contact VARCHAR(15) NOT NULL
             )"""
         )
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
     
     @staticmethod  
     def insert_customer(name, contact):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """INSERT INTO customers (name,contact)
             VALUES (%s,%s)""",(name,contact)
         )
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
     
     @staticmethod
     def update_customer(customer_id, name=None, contact=None):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute("SELECT * FROM customers WHERE id = %s",(customer_id,))
         customer = cur.fetchone()
         
         if not customer:
             print(">>>>>> Customer not found!")
             cur.close()
+            conn.close()
             return
         
         update_fields = []
@@ -51,26 +57,31 @@ class Customers:
         cur.execute(
             update_query,(customer_id,)
         )
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
     
     @staticmethod
     def delete_customer(customer_id):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             "DELETE FROM customers WHERE id = %s",(customer_id,)
         )
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
 
     @staticmethod
     def get_all_customers():
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             "SELECT * FROM customers"
         )
         customers = cur.fetchall()   
         cur.close()
+        conn.close()
         return customers
      
     @staticmethod   

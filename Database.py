@@ -10,5 +10,3 @@ def connection():
         port=st.secrets["DB_PORT"],
         sslmode="require"
     )
-
-con = connection()

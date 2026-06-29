@@ -1,4 +1,4 @@
-from Database import con
+from Database import connection
 
 class Products:
     
@@ -7,7 +7,8 @@ class Products:
     
     @staticmethod
     def create_table():
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """CREATE TABLE IF NOT EXISTS products (
                 id SERIAL PRIMARY KEY,
@@ -17,12 +18,14 @@ class Products:
                 quantity INTEGER NOT NULL
             )"""
         )
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
         
     @staticmethod
     def insert_product(name,description,price,quantity):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """INSERT INTO products (name,description,price,quantity)
             VALUES(%s,%s,%s,%s)
@@ -30,18 +33,21 @@ class Products:
             (name,description,price,quantity)
         )
         print(">>>>>>>> Insert Products!")
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
     
     @staticmethod
     def update_product(product_id, name=None, description=None, price=None, quantity=None):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute("SELECT * FROM products WHERE id = %s",(product_id,))
         product = cur.fetchone()
         
         if not product:
             print(">>>>> Product not found!")
             cur.close()
+            conn.close()
             return
         
         update_field = []
@@ -55,39 +61,46 @@ class Products:
             update_field.append(f"quantity = '{quantity}'") 
             
         update_query = f"UPDATE products SET {','.join(update_field)} WHERE id = %s"
-        cur.execute(update_query,(product_id))
-        con.commit()
-        cur.close()  
+        cur.execute(update_query,(product_id,))
+        conn.commit()
+        cur.close()
+        conn.close()  
             
     @staticmethod
     def delete_product(product_id):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             "DELETE FROM products WHERE id = %s",(product_id,)
         )
         print(">>>>>>> Product Deleted!")
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
         
     @staticmethod
     def view_product():
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             "SELECT * FROM products"
         )
         products = cur.fetchall()
         cur.close()
+        conn.close()
         return products
         
     @staticmethod
     def view_product_id(product_id):
-            cur = con.cursor()
-            cur.execute(
-                "SELECT * FROM products WHERE id = %s",(product_id,)
-            )
-            products = cur.fetchone()
-            cur.close()
-            return products
+        conn = connection()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT * FROM products WHERE id = %s",(product_id,)
+        )
+        products = cur.fetchone()
+        cur.close()
+        conn.close()
+        return products
         
     @staticmethod   
     def product_menu():  

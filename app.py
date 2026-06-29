@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from Database import con
+from Database import connection
 from Customers import Customers
 from Products import Products
 from Sales import Sales
@@ -63,13 +63,15 @@ def initialize_tables():
         SaleItems.create_table()
         
         # Fix sequences for all tables
-        cur = con.cursor()
-        cur.execute("SELECT setval('customers_id_seq', (SELECT MAX(id) FROM customers))")
-        cur.execute("SELECT setval('products_id_seq', (SELECT MAX(id) FROM products))")
-        cur.execute("SELECT setval('sales_id_seq', (SELECT MAX(id) FROM sales))")
-        cur.execute("SELECT setval('sale_items_id_seq', (SELECT MAX(id) FROM sale_items))")
-        con.commit()
+        conn = connection()
+        cur = conn.cursor()
+        cur.execute("SELECT setval('customers_id_seq', COALESCE((SELECT MAX(id) FROM customers), 0))")
+        cur.execute("SELECT setval('products_id_seq', COALESCE((SELECT MAX(id) FROM products), 0))")
+        cur.execute("SELECT setval('sales_id_seq', COALESCE((SELECT MAX(id) FROM sales), 0))")
+        cur.execute("SELECT setval('sale_items_id_seq', COALESCE((SELECT MAX(id) FROM sale_items), 0))")
+        conn.commit()
         cur.close()
+        conn.close()
         
         st.session_state.tables_initialized = True
         return True
@@ -630,10 +632,12 @@ elif page == "⚙️ Settings":
     with col2:
         if st.button("📊 Check Database Status", use_container_width=True):
             try:
-                cur = con.cursor()
+                conn = connection()
+                cur = conn.cursor()
                 cur.execute("SELECT version();")
                 version = cur.fetchone()
                 cur.close()
+                conn.close()
                 st.success(f"✅ Database Connected!\nVersion: {version[0]}")
             except Exception as e:
                 st.error(f"❌ Database Connection Error: {e}")

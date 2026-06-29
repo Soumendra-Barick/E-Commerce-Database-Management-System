@@ -1,10 +1,11 @@
-from Database import con
+from Database import connection
 
 class SaleItems:
     
     @staticmethod
     def create_table():
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """CREATE TABLE IF NOT EXISTS sale_items (
                 id SERIAL PRIMARY KEY,
@@ -24,26 +25,31 @@ class SaleItems:
                 ON DELETE CASCADE
             )"""
         )
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
 
     @staticmethod
     def add_sale_item(sale_id, product_id, quantity, price):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """INSERT INTO sale_items (sale_id, product_id, quantity, price)
             VALUES (%s, %s, %s, %s)
             """,
             (sale_id, product_id, quantity, price)
         )
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
 
     @staticmethod
     def get_sale_items_by_sale(sale_id):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute("SELECT * FROM sale_items WHERE sale_id = %s", (sale_id,))
         items = cur.fetchall()
         cur.close()
+        conn.close()
         return items
         

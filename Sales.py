@@ -1,4 +1,4 @@
-from Database import con
+from Database import connection
 
 class Sales:
     def __init__(self):
@@ -6,7 +6,8 @@ class Sales:
     
     @staticmethod
     def create_table():
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """CREATE TABLE IF NOT EXISTS sales(
                 id SERIAL PRIMARY KEY,
@@ -20,24 +21,28 @@ class Sales:
                 ON DELETE CASCADE
             )"""
         )
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
 
     @staticmethod
     def insert_sale(customer_id, date, total_amount):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """INSERT INTO sales (customer_id, date, total_amount)
             VALUES (%s,%s,%s)
             """,
             (customer_id, date, total_amount)
         )
-        con.commit()
+        conn.commit()
         cur.close()
+        conn.close()
         
     @staticmethod
     def generate_bill(sale_id):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """SELECT s.id, s.customer_id, s.date, s.total_amount, c.name, c.contact
             FROM sales s
@@ -48,6 +53,7 @@ class Sales:
         sale = cur.fetchone()
         if not sale:
             cur.close()
+            conn.close()
             return None
 
         cur.execute(
@@ -60,6 +66,7 @@ class Sales:
         )
         items = cur.fetchall()
         cur.close()
+        conn.close()
 
         computed_total = sum(float(item[3]) * float(item[4]) for item in items)
         return {
@@ -85,7 +92,8 @@ class Sales:
 
     @staticmethod
     def update_sale(sale_id, customer_id=None, date=None, total_amount=None):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             "SELECT * FROM sales WHERE id = %s",(sale_id,)
         )
@@ -93,6 +101,7 @@ class Sales:
         if not sale:
             print(">>>>>> Sale not found!")
             cur.close()
+            conn.close()
             return
         
         update_fields = []
@@ -104,53 +113,63 @@ class Sales:
             update_fields.append(f"total_amount = '{total_amount}'")
         
         sales_query = f"UPDATE sales SET {','.join(update_fields)} WHERE id = %s"
-        cur.execute(sales_query,(sale_id))
-        con.commit()
+        cur.execute(sales_query,(sale_id,))
+        conn.commit()
         cur.close()
+        conn.close()
      
     @staticmethod
     def delete_sale(sale_id):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             "DELETE FROM sales WHERE id = %s",(sale_id,)
         )
-        con.commit()
-        cur.close() 
-
+        conn.commit()
+        cur.close()
+        conn.close()
+ 
     @staticmethod
     def view_sales():
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             "SELECT * FROM sales"
         )
         sales = cur.fetchall()
         cur.close()
+        conn.close()
         return sales
 
     @staticmethod
     def view_sale_id(sale_id):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             "SELECT * FROM sales WHERE id = %s",(sale_id,)
         )
         sale = cur.fetchone()
         cur.close()
+        conn.close()
         return sale
 
     # Analytical Queries
     @staticmethod
     def total_sales_by_date(start_date,end_date):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             "SELECT SUM(total_amount) FROM sales WHERE date BETWEEN %s AND %s",(start_date,end_date)
         )
         total_sales = cur.fetchone()
         cur.close()
+        conn.close()
         return total_sales
 
     @staticmethod
     def get_top_selling_products():
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute(
             """SELECT product_id, SUM(quantity) AS total_quantity
             FROM sale_items
@@ -161,14 +180,17 @@ class Sales:
         )
         total_products = cur.fetchall()
         cur.close()
+        conn.close()
         return total_products
     
     @staticmethod
     def get_seles_by_customer(customer_id):
-        cur = con.cursor()
+        conn = connection()
+        cur = conn.cursor()
         cur.execute("SELECT * FROM sales WHERE customer_id = %s",(customer_id,))
         sales = cur.fetchone()
         cur.close()
+        conn.close()
         return sales
     
     @staticmethod   
